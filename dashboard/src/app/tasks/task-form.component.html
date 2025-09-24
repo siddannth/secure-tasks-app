@@ -1,0 +1,16 @@
+<form (ngSubmit)="submit()" class="bg-white dark:bg-gray-900 p-4 rounded-lg shadow mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <input [(ngModel)]="title" name="title" placeholder="Title" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-700" />
+    <input [(ngModel)]="description" name="description" placeholder="Description" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-700" />
+    <select [(ngModel)]="category" name="category" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-700">
+      <option>Work</option>
+      <option>Personal</option>
+    </select>
+    <select [(ngModel)]="status" name="status" class="p-2 border rounded dark:bg-gray-800 dark:border-gray-700">
+      <option value="todo">To Do</option>
+      <option value="in_progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Task</button>
+  </div>
+</form>

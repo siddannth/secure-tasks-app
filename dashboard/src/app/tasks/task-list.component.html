@@ -1,0 +1,139 @@
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+  <!-- Header -->
+  <header class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Task Dashboard</h1>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex flex-wrap gap-3 items-center">
+    <input [(ngModel)]="search" placeholder="🔍 Search tasks..."
+           class="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+
+    <select [(ngModel)]="filterCategory" (change)="onFiltersChange()"
+            class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      <option value="">All Categories</option>
+      <option value="Work">Work</option>
+      <option value="Personal">Personal</option>
+    </select>
+
+    <select [(ngModel)]="filterStatus" (change)="onFiltersChange()"
+            class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      <option value="">All Status</option>
+      <option value="todo">Todo</option>
+      <option value="in_progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+
+    <button (click)="doSearch()"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+      Search
+    </button>
+  </div>
+
+  <!-- Add Task -->
+  <div class="mb-6">
+    <app-task-form (created)="onCreated()"></app-task-form>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Todo -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">📝 Todo</h2>
+      <div cdkDropList [cdkDropListData]="todo()" (cdkDropListDropped)="dropTodo($event)"
+           class="space-y-3 min-h-[100px]">
+        <div *ngFor="let t of todo()" cdkDrag class="p-3 bg-gray-50 dark:bg-gray-700 rounded shadow hover:shadow-md">
+          <h3 class="font-bold">{{ t.title }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">{{ t.description }}</p>
+          <div class="flex gap-2 mt-2">
+            <button (click)="startEdit(t)" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded">Edit</button>
+            <button (click)="onDelete(t.id)" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded">Delete</button>
+          </div>
+
+          <!-- Inline edit -->
+          <div *ngIf="editingId === t.id" class="mt-2 bg-gray-200 dark:bg-gray-600 p-2 rounded">
+            <input [(ngModel)]="editBuffer.title" placeholder="Title" class="w-full mb-1 p-1 rounded" />
+            <textarea [(ngModel)]="editBuffer.description" placeholder="Description" class="w-full mb-1 p-1 rounded"></textarea>
+            <select [(ngModel)]="editBuffer.status" class="w-full mb-1 p-1 rounded">
+              <option value="todo">Todo</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            <div class="flex justify-end gap-2">
+              <button (click)="saveEdit(t.id)" class="px-2 py-1 bg-green-600 text-white text-xs rounded">Save</button>
+              <button (click)="cancelEdit()" class="px-2 py-1 bg-gray-400 text-xs rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">🚧 In Progress</h2>
+      <div cdkDropList [cdkDropListData]="inProgress()" (cdkDropListDropped)="dropDoing($event)"
+           class="space-y-3 min-h-[100px]">
+        <div *ngFor="let t of inProgress()" cdkDrag class="p-3 bg-gray-50 dark:bg-gray-700 rounded shadow hover:shadow-md">
+          <h3 class="font-bold">{{ t.title }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">{{ t.description }}</p>
+          <div class="flex gap-2 mt-2">
+            <button (click)="startEdit(t)" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded">Edit</button>
+            <button (click)="onDelete(t.id)" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded">Delete</button>
+          </div>
+
+          <!-- Inline edit -->
+          <div *ngIf="editingId === t.id" class="mt-2 bg-gray-200 dark:bg-gray-600 p-2 rounded">
+            <input [(ngModel)]="editBuffer.title" placeholder="Title" class="w-full mb-1 p-1 rounded" />
+            <textarea [(ngModel)]="editBuffer.description" placeholder="Description" class="w-full mb-1 p-1 rounded"></textarea>
+            <select [(ngModel)]="editBuffer.status" class="w-full mb-1 p-1 rounded">
+              <option value="todo">Todo</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            <div class="flex justify-end gap-2">
+              <button (click)="saveEdit(t.id)" class="px-2 py-1 bg-green-600 text-white text-xs rounded">Save</button>
+              <button (click)="cancelEdit()" class="px-2 py-1 bg-gray-400 text-xs rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">✅ Done</h2>
+      <div cdkDropList [cdkDropListData]="done()" (cdkDropListDropped)="dropDone($event)"
+           class="space-y-3 min-h-[100px]">
+        <div *ngFor="let t of done()" cdkDrag class="p-3 bg-gray-50 dark:bg-gray-700 rounded shadow hover:shadow-md">
+          <h3 class="font-bold">{{ t.title }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">{{ t.description }}</p>
+          <div class="flex gap-2 mt-2">
+            <button (click)="startEdit(t)" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded">Edit</button>
+            <button (click)="onDelete(t.id)" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded">Delete</button>
+          </div>
+
+          <!-- Inline edit -->
+          <div *ngIf="editingId === t.id" class="mt-2 bg-gray-200 dark:bg-gray-600 p-2 rounded">
+            <input [(ngModel)]="editBuffer.title" placeholder="Title" class="w-full mb-1 p-1 rounded" />
+            <textarea [(ngModel)]="editBuffer.description" placeholder="Description" class="w-full mb-1 p-1 rounded"></textarea>
+            <select [(ngModel)]="editBuffer.status" class="w-full mb-1 p-1 rounded">
+              <option value="todo">Todo</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            <div class="flex justify-end gap-2">
+              <button (click)="saveEdit(t.id)" class="px-2 py-1 bg-green-600 text-white text-xs rounded">Save</button>
+              <button (click)="cancelEdit()" class="px-2 py-1 bg-gray-400 text-xs rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="mt-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow max-w-2xl mx-auto">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">📊 Task Completion</h2>
+    <app-completion-chart [tasks]="tasksForChart()"></app-completion-chart>
+  </div>
+</div>
