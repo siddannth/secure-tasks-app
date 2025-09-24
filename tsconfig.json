@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@securetasks/data": ["libs/data/src/index.ts"],
+      "@securetasks/auth": ["libs/auth/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/**/*",
+    "libs/**/*"
+  ]
+}
