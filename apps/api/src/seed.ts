@@ -10,7 +10,6 @@ import { Task } from './entities/task.entity';
 import { Role } from '../../../libs/data/src/lib/role.enum';
 import { TaskStatus } from '../../../libs/data/src/lib/task.types';
 
-
 const ds = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -31,83 +30,102 @@ async function run() {
   const taskRepo = ds.getRepository(Task);
 
   // --- Organizations ---
-  const parent = await orgRepo.save(
+  const orgA = await orgRepo.save(
     orgRepo.create({ name: 'Org A' } as Partial<Organization>)
   );
 
-  const child = await orgRepo.save(
-    orgRepo.create({ name: 'Org B', parent } as Partial<Organization>)
+  const orgB = await orgRepo.save(
+    orgRepo.create({ name: 'Org B', parent: orgA } as Partial<Organization>)
   );
 
-  // --- Users ---
-  const owner = await userRepo.save(
+  // --- Org A Users ---
+  const ownerA = await userRepo.save(
     userRepo.create({
       email: 'owner@orga.com',
       passwordHash: await bcrypt.hash('owner1234', 10),
-      org: parent,
+      org: orgA,
       role: Role.OWNER,
     } as Partial<User>)
   );
 
-  const admin = await userRepo.save(
+  const adminA = await userRepo.save(
     userRepo.create({
       email: 'admin@orga.com',
       passwordHash: await bcrypt.hash('admin1234', 10),
-      org: parent,
+      org: orgA,
       role: Role.ADMIN,
     } as Partial<User>)
   );
 
-  const viewer = await userRepo.save(
+  const viewerA = await userRepo.save(
     userRepo.create({
-      email: 'viewer@orgb.com',
+      email: 'viewer@orga.com',
       passwordHash: await bcrypt.hash('viewer1234', 10),
-      org: child,
+      org: orgA,
       role: Role.VIEWER,
     } as Partial<User>)
   );
 
-  // --- Tasks ---
+  // --- Org B Users ---
+  const adminB = await userRepo.save(
+    userRepo.create({
+      email: 'admin@orgb.com',
+      passwordHash: await bcrypt.hash('admin1234', 10),
+      org: orgB,
+      role: Role.ADMIN,
+    } as Partial<User>)
+  );
+
+  const viewerB = await userRepo.save(
+    userRepo.create({
+      email: 'viewer@orgb.com',
+      passwordHash: await bcrypt.hash('viewer1234', 10),
+      org: orgB,
+      role: Role.VIEWER,
+    } as Partial<User>)
+  );
+
+  const ownerB = await userRepo.save(
+    userRepo.create({
+      email: 'owner@orgb.com',
+      passwordHash: await bcrypt.hash('owner1234', 10),
+      org: orgB,
+      role: Role.OWNER,
+    } as Partial<User>)
+  );
+
+  // --- Org A Tasks ---
   await taskRepo.save(
-  taskRepo.create({
-    title: 'Design RBAC',
-    category: 'Work',
-    status: TaskStatus.TODO,
-    org: parent,
-    createdBy: owner,
-  } as Partial<Task>)
-);
+    taskRepo.create({
+      title: 'Org A: Design RBAC BY OWNER A',
+      category: 'Work',
+      status: TaskStatus.TODO,
+      org: orgA,
+      createdBy: ownerA,
+    } as Partial<Task>)
+  );
 
-await taskRepo.save(
-  taskRepo.create({
-    title: 'Write tests',
-    category: 'Work',
-    status: TaskStatus.IN_PROGRESS,
-    org: parent,
-    createdBy: admin,
-  } as Partial<Task>)
-);
+  await taskRepo.save(
+    taskRepo.create({
+      title: 'Org A: Write tests',
+      category: 'Work',
+      status: TaskStatus.IN_PROGRESS,
+      org: orgA,
+      createdBy: adminA,
+    } as Partial<Task>)
+  );
 
-await taskRepo.save(
-  taskRepo.create({
-    title: 'Deploy MVP',
-    category: 'Work',
-    status: TaskStatus.DONE,
-    org: parent,
-    createdBy: admin,
-  } as Partial<Task>)
-);
-
-await taskRepo.save(
-  taskRepo.create({
-    title: 'Personal task',
-    category: 'Personal',
-    status: TaskStatus.TODO,
-    org: child,
-    createdBy: viewer,
-  } as Partial<Task>)
-);
-
+  // --- Org B Tasks ---
+  
+  await taskRepo.save(
+    taskRepo.create({
+      title: 'Org B: RBAC BY OWNER B ',
+      category: 'Personal',
+      status: TaskStatus.TODO,
+      org: orgB,
+      createdBy: ownerB,
+    } as Partial<Task>)
+  );
 
   console.log('✅ Seeding complete.');
   await ds.destroy();
@@ -117,3 +135,4 @@ run().catch((e) => {
   console.error('❌ Seeding failed:', e);
   process.exit(1);
 });
+
